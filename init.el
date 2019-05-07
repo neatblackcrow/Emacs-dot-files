@@ -225,13 +225,16 @@
 		 "  :Updated-at: %U\n"
 		 "  :END:"
 		 )
-	       :empty-lines 1) t)
+	       :empty-lines 1 :kill-buffer) t)
 
 
 (setq org-agenda-files `(,(concat org-directory "/time_management/adhoc-tasks.org") ,(concat org-directory "/time_management/projects")))
 
 (setq org-todo-keywords '((sequence "UNFINISHED(u)" "WAITING(w)" "|" "FINISHED(f)" "CANCELED(c)" "DELEGATED(d)") ; Available task states
 			  (sequence "OPENED(o)" "ONGOING(g)" "|" "CLOSED(c)" "THROWN_AWAY(t)"))) ; Availabel project states
+
+(setq org-log-state-notes-into-drawer t)
+(setcar (cdr (nth 2 org-log-note-headings)) "Comment on %t")
 
 (defun impact-sorting-strategy(a b)
   "Basic impact sorting strategy function which returns following order 1 < 2 < 3 < 4 < 5.

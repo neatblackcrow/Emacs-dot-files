@@ -3,8 +3,8 @@
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
- (filename . "d:/Desktop/personal-resources-planning/time_management/projects/test.org")
- (front-context-string . "** UNFINISHED Ye")
- (rear-context-string . "2:16]\n   :END:\n\n")
- (position . 1058))
+ (filename . "d:/Desktop/personal-resources-planning/time_management/projects/daily-routine.org")
+ (front-context-string . "** UNFINISHED te")
+ (rear-context-string . "0:34]\n   :END:\n\n")
+ (position . 3909))
 )
