@@ -10,6 +10,9 @@
 
 (load-theme 'zenburn t)
 
+(require 'epa-file)
+(epa-file-enable) ; Enable PGP transparent encryption
+
 (require 'cl)
 (require 'org)
 
@@ -433,7 +436,8 @@
  '(custom-safe-themes
    (quote
     ("04232a0bfc50eac64c12471607090ecac9d7fd2d79e388f8543d1c5439ed81f5" default)))
- '(package-selected-packages (quote (zenburn-theme))))
+ '(package-selected-packages (quote (zenburn-theme)))
+ '(safe-local-variable-values (quote ((epa-file-enrypt-to "fieldfirst2012@gmail.com")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
