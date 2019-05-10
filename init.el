@@ -208,9 +208,22 @@
 (add-to-list 'org-capture-templates
 	     `("t" "Add a new project associated task" entry
 	       (function (lambda()
-			   (find-file(read-file-name "Project file: " (concat org-directory "/time_management/projects") "" t))
-			   (goto-char (re-search-forward "^* .+"))
-			   ))
+			   (let ((file-name (read-file-name "Project file: " (concat org-directory "/time_management/projects") "" t))
+				 (available-non-todo-subheadlines '()))
+			     
+			     (let ((MATCH t)
+				   (SCOPE (list file-name))
+				   (SKIP nil))
+			       (org-map-entries
+				(lambda()
+				  (if (or (eq 1 (nth 0 (org-heading-components))) (null (nth 2 (org-heading-components))))
+				      (add-to-list 'available-non-todo-subheadlines (org-entry-get nil "ITEM"))) ;Can only insert into non-todo subheadlines or directly into the project headline
+				  ) MATCH SCOPE SKIP))
+			     
+			     (find-file file-name)
+			     (goto-char (point-min))
+			     (goto-char (re-search-forward (concat "^\*.*" (completing-read "Non-todo subheadline: " available-non-todo-subheadlines nil t))))
+			     )))
 	       ,(concat
 		 "* UNFINISHED %^{Task name} %^{Tags [optional]}G \n"
 		 "  %(if (yes-or-no-p \"Does a task has a schedule?\") \"SCHEDULED: %^{Schedule}T\" \"\") DEADLINE: %^{Deadline}T \n"
@@ -225,7 +238,7 @@
 		 "  :Updated-at: %U\n"
 		 "  :END:"
 		 )
-	       :empty-lines 1 :kill-buffer) t)
+	       :empty-lines 1) t)
 
 
 (setq org-agenda-files `(,(concat org-directory "/time_management/adhoc-tasks.org") ,(concat org-directory "/time_management/projects")))
@@ -234,7 +247,22 @@
 			  (sequence "OPENED(o)" "ONGOING(g)" "|" "CLOSED(c)" "THROWN_AWAY(t)"))) ; Availabel project states
 
 (setq org-log-state-notes-into-drawer t)
-(setcar (cdr (nth 2 org-log-note-headings)) "Comment on %t")
+(setq org-log-done 'time)
+
+(defun remap-org-agenda()
+  (local-set-key (kbd "C-c C-z") (lambda()
+				   (interactive)
+				   (setcdr (nth 2 org-log-note-headings) "Comment on %t")
+				   (org-agenda-add-note)
+				   ))
+  (local-set-key (kbd "C-c C-y") (lambda()
+				   (interactive)
+				   (setcdr (nth 2 org-log-note-headings) "Distraction on %t")
+				   (org-agenda-add-note)
+				   ))
+  )
+
+(add-hook 'org-agenda-mode-hook 'remap-org-agenda)
 
 (defun impact-sorting-strategy(a b)
   "Basic impact sorting strategy function which returns following order 1 < 2 < 3 < 4 < 5.
@@ -250,24 +278,51 @@
 
 (defun roi-sorting-strategy(a b)
   "Basic roi sorting strategy function which sort each entry by its yield value.
-   Yield calculation based on this formula (impact / clocksum_t) / (clocksum_t) or (impact / estimated effort) / (estimated effort) when clocksum_t is nil
-   Both clocksum_t and effort are retrived as minutes normalized by 300.00
-   Function returns 1 if a>b, -1 when a<b and nil when a=b"
+   Yield calculation based on this formula (impact / clocksum) / (clocksum) or (impact / estimated effort) / (estimated effort) when task isn't get clocked yet
+   Both clocksum and effort are retrived as minutes normalized by 300.00
+   Function returns 1 if a>b, -1 when a<b and nil when a=b
+
+   Repeating tasks, only get clock sum for today only (clocksum_t), since the ROI shouldn't be diminished as the dates goes by.
+   Time costs only increases within that day only.
+
+   Non-repeating tasks, all clock sum counts. Most tasks are completed within a single occurence anyway. But some clocked task might get the WAITING status
+   and need to be rescheduled later. Time costs continue to increase if user continue spend time on that task, until it's finished.
+
+   If ROI goes to low, splitting a task into smaller subtasks is recommended."
+  
   (let* ((a_pos (get-text-property 0 'org-marker a))
 	 (b_pos (get-text-property 0 'org-marker b))
 	 (a_i (string-to-number (org-entry-get a_pos "Impact")))
 	 (b_i (string-to-number (org-entry-get b_pos "Impact")))
 
-	 (a_c (parse-time-string (if (null (org-entry-get a_pos "CLOCKSUM_T"))
-				     (org-entry-get a_pos "Effort")
-				   (org-entry-get a_pos "CLOCKSUM_T"))))
-	 (a_c_minutes (+ (* (nth 2 a_c) 60) (nth 1 a_c))) ; Combine hours and minutes into minutes
-	 
-	 (b_c (parse-time-string (if (null (org-entry-get b_pos "CLOCKSUM_T"))
-				     (org-entry-get b_pos "Effort")
-				   (org-entry-get b_pos "CLOCKSUM_T"))))
-	 (b_c_minutes (+ (* (nth 2 b_c) 60) (nth 1 b_c)))
-	 
+	 (a_c_minutes (with-current-buffer (marker-buffer a_pos)
+			(goto-char (marker-position a_pos))
+			(let ((clocksum_t (org-clock-sum-current-item (format-time-string "%Y-%m-%d 00:00")))
+			      (clocksum (org-clock-sum-current-item))
+			      (effort (parse-time-string (org-entry-get a_pos "Effort"))))
+			  
+			  (if (null (org-get-repeat)) ; Non-repeating tasks
+			      (if (eq clocksum 0)
+				  (+ (* (nth 2 effort) 60) (nth 1 effort)) ; Effort, Combine hours and minutes into minutes
+				clocksum)
+			    (if (eq clocksum_t 0) ; Repeating tasks
+				(+ (* (nth 2 effort) 60) (nth 1 effort))
+			      clocksum_t)))))
+
+	 (b_c_minutes (with-current-buffer (marker-buffer b_pos)
+			(goto-char (marker-position b_pos))
+			(let ((clocksum_t (org-clock-sum-current-item (format-time-string "%Y-%m-%d 00:00")))
+			      (clocksum (org-clock-sum-current-item))
+			      (effort (parse-time-string (org-entry-get b_pos "Effort"))))
+			  
+			  (if (null (org-get-repeat)) ; Non-repeating tasks
+			      (if (eq clocksum 0)
+				  (+ (* (nth 2 effort) 60) (nth 1 effort)) ; Effort, Combine hours and minutes into minutes
+				clocksum)
+			    (if (eq clocksum_t 0) ; Repeating tasks
+				(+ (* (nth 2 effort) 60) (nth 1 effort))
+			      clocksum_t)))))
+    
 	 (a_yield (/ (/ a_i (/ a_c_minutes 300.00)) (/ a_c_minutes 300.00)))
 	 (b_yield (/ (/ b_i (/ b_c_minutes 300.00)) (/ b_c_minutes 300.00))))
     
