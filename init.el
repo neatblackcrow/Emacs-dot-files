@@ -28,7 +28,7 @@
 (defun org-dblock-write:get-latest-mission-statement(params)
   "Get the latest mission statement. Use with block view in a time management's index page."
   (let ((MATCH t)
-	(SCOPE '("./mission-statements.org"))
+	(SCOPE '("./mission-statements.org.gpg"))
 	(SKIP nil)
 	(latest-timestamp nil)
 	(latest-quotes nil))
@@ -89,7 +89,7 @@
 
 (add-to-list 'org-capture-templates
 	     `("m" "Add a new mission statement." entry
-	       (file "./time_management/mission-statements.org")
+	       (file "./time_management/mission-statements.org.gpg")
 	       ,(concat
 		 "* %^{Statement}\n"
 		 "  :PROPERTIES:\n"
@@ -101,7 +101,7 @@
 
 (add-to-list 'org-capture-templates
 	     `("l" "Add a new life area." entry
-	       (file "./time_management/life-areas.org")
+	       (file "./time_management/life-areas.org.gpg")
 	       ,(concat
 		 "* %^{Life area}\n"
 		 "  :PROPERTIES:\n"
@@ -113,7 +113,7 @@
 
 (add-to-list 'org-capture-templates
 	     `("v" "Add a new life value." entry
-	       (file "./time_management/values.org")
+	       (file "./time_management/values.org.gpg")
 	       ,(concat
 		 "* %^{Value}\n"
 		 "  :PROPERTIES:\n"
@@ -126,13 +126,13 @@
 
 (add-to-list 'org-capture-templates
 	     `("r" "Add a new life role." entry
-	       (file "./time_management/roles.org")
+	       (file "./time_management/roles.org.gpg")
 	       ,(concat
 		 "* %^{Role}\n"
 		 "  :PROPERTIES:\n"
 		 "  :Description: %^{Description [optional]}\n"
-		 "  :Life-area: %(completing-read \"Life-area [optional]: \" (ref-completion \"/time_management/life-areas.org\") nil nil \"\")\n"
-		 "  :Values: %(completing-read \"Values [optional]: \" (ref-completion \"/time_management/values.org\" t) nil nil \"\")\n"
+		 "  :Life-area: %(completing-read \"Life-area [optional]: \" (ref-completion \"/time_management/life-areas.org.gpg\") nil nil \"\")\n"
+		 "  :Values: %(completing-read \"Values [optional]: \" (ref-completion \"/time_management/values.org.gpg\" t) nil nil \"\")\n"
 		 "  :Created-at: %U\n"
 		 "  :Updated-at: %U\n"
 		 "  :END:"
@@ -141,11 +141,11 @@
 
 (add-to-list 'org-capture-templates
 	     `("e" "Add a new life event" entry
-	       (file+headline "./time_management/life-events.org" "Life events")
+	       (file+headline "./time_management/life-events.org.gpg" "Life events")
 	       ,(concat
 		 "* %^{Event}\n"
 		 "  :PROPERTIES:\n"
-		 "  :Role: %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org\") nil nil \"\")\n"
+		 "  :Role: %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
 		 "  :Description: %^{Description [optional]}\n"
 		 "  :Start-date: %^{Start-date}u\n"
 		 "  :End-date: %(if (yes-or-no-p \"Does an event finished yet?\") \"%^{End-date}u\" \"Present\") \n"
@@ -157,13 +157,13 @@
 
 (add-to-list 'org-capture-templates
 	     `("a" "Add a new ad-hoc task" entry
-	       (file+datetree "./time_management/adhoc-tasks.org")
+	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
 	       ,(concat
 		 "* UNFINISHED %^{Task name} %^{Tags [optional]}G \n"
 		 "  SCHEDULED: %^{Schedule}T %(if (yes-or-no-p \"Does a task has a deadline?\") \"DEADLINE: %^{Deadline}T\" \"\") \n"
 		 "  :PROPERTIES:\n"
 		 "  :Description: %^{Description [optional]}\n"
-		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org\") nil nil \"\")\n"
+		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
 		 "  :Effort: %^{Effort|0:10|0:30|1:00|1:30|2:00|2:30|3:00|3:30|4:00|4:30|5:00}\n"
 		 "  :Impact: %^{Impact|1|2|3|4|5}\n"
 		 "  :Risk: %^{Risk|low|high}\n"
@@ -176,13 +176,13 @@
 
 (add-to-list 'org-capture-templates
 	     `("i" "Add an interruption task" entry
-	       (file+datetree "./time_management/adhoc-tasks.org")
+	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
 	       ,(concat
 		 "* UNFINISHED %^{Task name} :interruption: %^{Tags [optional]}G \n"
 		 "  SCHEDULED: %^{Schedule}T %(if (yes-or-no-p \"Does a task has a deadline?\") \"DEADLINE: %^{Deadline}T\" \"\") \n"
 		 "  :PROPERTIES:\n"
 		 "  :Description: %^{Description [optional]}\n"
-		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org\") nil nil \"\")\n"
+		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
 		 "  :Effort: %^{Effort|0:10|0:30|1:00|1:30|2:00|2:30|3:00|3:30|4:00|4:30|5:00}\n"
 		 "  :Impact: %^{Impact|1|2|3|4|5}\n"
 		 "  :Risk: %^{Risk|low|high}\n"
@@ -196,7 +196,7 @@
 (add-to-list 'org-capture-templates
 	     `("p" "Add a new project" entry
 	       (function (lambda()
-			   (find-file(read-file-name "Project file: " (concat org-directory "/time_management/projects") "new-project.org")) ))
+			   (find-file(read-file-name "Project file: " (concat org-directory "/time_management/projects") "new-project.org.gpg")) ))
 	       ,(concat
 		 "* OPENED %^{Project name} %^{Tags [optional]}G \n"
 		 "  SCHEDULED: %^{Schedule}t DEADLINE: %^{Deadline}t \n"
@@ -232,7 +232,7 @@
 		 "  %(if (yes-or-no-p \"Does a task has a schedule?\") \"SCHEDULED: %^{Schedule}T\" \"\") DEADLINE: %^{Deadline}T \n"
 		 "  :PROPERTIES:\n"
 		 "  :Description: %^{Description [optional]}\n"
-		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org\") nil nil \"\")\n"
+		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
 		 "  :Effort: %^{Effort|0:10|0:30|1:00|1:30|2:00|2:30|3:00|3:30|4:00|4:30|5:00}\n"
 		 "  :Impact: %^{Impact|1|2|3|4|5}\n"
 		 "  :Risk: %^{Risk|low|high}\n"
@@ -244,7 +244,8 @@
 	       :empty-lines 1) t)
 
 
-(setq org-agenda-files `(,(concat org-directory "/time_management/adhoc-tasks.org") ,(concat org-directory "/time_management/projects")))
+(setq org-agenda-files `(,(concat org-directory "/time_management/adhoc-tasks.org.gpg") ,(concat org-directory "/time_management/projects"))
+      org-agenda-file-regexp "\\`[^.].*\\(\\.org\\|\\.org.gpg\\)\\'")
 
 (setq org-todo-keywords '((sequence "UNFINISHED(u)" "WAITING(w)" "|" "FINISHED(f)" "CANCELED(c)" "DELEGATED(d)") ; Available task states
 			  (sequence "OPENED(o)" "ONGOING(g)" "|" "CLOSED(c)" "THROWN_AWAY(t)"))) ; Availabel project states
