@@ -3,18 +3,20 @@
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
 ;; You may delete these explanatory comments.
-(package-initialize)
-
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")))
 
-(load-theme 'zenburn t)
+(package-initialize) ; Note that using Package.el as main package manager
+
+(load-theme 'zenburn t) ; Loading theme
 
 (require 'epa-file)
-(epa-file-enable) ; Enable PGP transparent encryption
+(epa-file-enable) ; Enable GPG transparent encryption
 
 (require 'cl)
 (require 'org)
+(require 'org-habit)
+(require 'org-clock)
 
 (setq org-link-frame-setup '((file . find-file))) ; Open link in the same window
 
@@ -24,6 +26,8 @@
 (setq org-confirm-elisp-link-function nil
       org-confirm-shell-link-function nil
       org-confirm-babel-evaluate nil)
+
+;; BEGIN of Time management module
 
 (defun org-dblock-write:get-latest-mission-statement(params)
   "Get the latest mission statement. Use with block view in a time management's index page."
@@ -429,6 +433,50 @@
 
     ))
 
+(defun org-dblock-write:timespent-by-role-report(params)
+  (let ((role_hours '())
+	(total_hours 0.0)
+	(start_date (plist-get params ':start-date)))
+    
+    (let ((MATCH t)
+	  (SCOPE 'agenda)
+	  (SKIP nil))
+      (org-map-entries
+       (lambda()
+	 (if (not (null (org-entry-get nil "Role")))
+	     
+	     (if (assoc (org-entry-get nil "Role") role_hours)
+		 (setcdr (assoc (org-entry-get nil "Role") role_hours) (+ (cdr (assoc (org-entry-get nil "Role") role_hours)) (org-clock-sum-current-item start_date)))
+	       (add-to-list 'role_hours (cons (org-entry-get nil "Role") (org-clock-sum-current-item start_date))))
+
+	   (setq total_hours (+ total_hours (org-clock-sum-current-item))))
+	 
+	 ) MATCH SCOPE SKIP))
+    
+    (org-table-create "3x1")
+    (org-table-next-field)
+    (insert "Roles")
+    (org-table-next-field)
+    (insert "%")
+    (org-table-next-field)
+    (insert "Clock sum")
+    (org-table-hline-and-move)
+    (beginning-of-line)
+
+    (dolist (role_hours_alist role_hours)
+      (org-table-next-field)
+      (insert (car role_hours_alist))
+      (org-table-next-field)
+      (insert (number-to-string (round (* (/ (cdr role_hours_alist) total_hours) 100))))
+      (org-table-next-field)
+      (insert (concat (number-to-string (floor (/ (cdr role_hours_alist) 60))) ":" (number-to-string (mod (cdr role_hours_alist) 60))))
+      (org-table-align)))
+  )
+
+(setq org-habit-graph-column 60)
+
+;; END of Time management module
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -437,7 +485,7 @@
  '(custom-safe-themes
    (quote
     ("04232a0bfc50eac64c12471607090ecac9d7fd2d79e388f8543d1c5439ed81f5" default)))
- '(package-selected-packages (quote (zenburn-theme)))
+ '(package-selected-packages (quote (org-drill-table gnuplot zenburn-theme)))
  '(safe-local-variable-values (quote ((epa-file-enrypt-to "fieldfirst2012@gmail.com")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
