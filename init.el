@@ -251,11 +251,18 @@
 (setq org-agenda-files `(,(concat org-directory "/time_management/adhoc-tasks.org.gpg") ,(concat org-directory "/time_management/projects"))
       org-agenda-file-regexp "\\`[^.].*\\(\\.org\\|\\.org.gpg\\)\\'")
 
-(setq org-todo-keywords '((sequence "UNFINISHED(u)" "WAITING(w)" "|" "FINISHED(f)" "CANCELED(c)" "DELEGATED(d)") ; Available task states
-			  (sequence "OPENED(o)" "ONGOING(g)" "|" "CLOSED(c)" "THROWN_AWAY(t)"))) ; Availabel project states
+(setq org-agenda-log-mode-items '(closed clock state)
+      org-agenda-start-with-log-mode t
+      org-agenda-start-with-follow-mode t
+      org-agenda-start-with-entry-text-mode nil)
 
-(setq org-log-state-notes-into-drawer t)
-(setq org-log-done 'time)
+(setq org-log-state-notes-into-drawer t
+      org-log-done nil    ; To avoid confusion, all DONE states don't get logged automatically. Leave them to ! and @ in todo keywords below
+      org-log-repeat nil) ; Prevent messing up with Org-habit (Only "FINISHED" state in DONE states should be logged)
+
+; Try to set more generalized keywords as possible. Can be overriden at the buffer or subtree level
+(setq org-todo-keywords '((sequence "UNFINISHED(u)" "WAITING(w@)" "|" "FINISHED(f!)" "DELEGATED(d@)" "CANCELED(c@)") ; Available task states
+			  (sequence "OPENED(o)" "ONGOING(g)" "|" "CLOSED(c)" "THROWN_AWAY(t@)"))) ; Availabel project states
 
 (defun remap-org-agenda()
   (local-set-key (kbd "C-c C-z") (lambda()
@@ -267,6 +274,10 @@
 				   (interactive)
 				   (setcdr (nth 2 org-log-note-headings) "Distraction on %t")
 				   (org-agenda-add-note)
+				   ))
+  (local-set-key (kbd "C-c C-i") (lambda()
+				   (interactive)
+				   (org-capture nil "i")
 				   ))
   )
 
@@ -449,7 +460,7 @@
 		 (setcdr (assoc (org-entry-get nil "Role") role_hours) (+ (cdr (assoc (org-entry-get nil "Role") role_hours)) (org-clock-sum-current-item start_date)))
 	       (add-to-list 'role_hours (cons (org-entry-get nil "Role") (org-clock-sum-current-item start_date))))
 
-	   (setq total_hours (+ total_hours (org-clock-sum-current-item))))
+	   (setq total_hours (+ total_hours (org-clock-sum-current-item start_date))))
 	 
 	 ) MATCH SCOPE SKIP))
     
@@ -462,12 +473,14 @@
     (insert "Clock sum")
     (org-table-hline-and-move)
     (beginning-of-line)
-
+    
     (dolist (role_hours_alist role_hours)
       (org-table-next-field)
       (insert (car role_hours_alist))
       (org-table-next-field)
-      (insert (number-to-string (round (* (/ (cdr role_hours_alist) total_hours) 100))))
+      (if (= total_hours 0.0)
+	  (insert "0")
+	(insert (number-to-string (round (* (/ (cdr role_hours_alist) total_hours) 100)))))
       (org-table-next-field)
       (insert (concat (number-to-string (floor (/ (cdr role_hours_alist) 60))) ":" (number-to-string (mod (cdr role_hours_alist) 60))))
       (org-table-align)))
