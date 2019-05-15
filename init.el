@@ -49,9 +49,6 @@
 	 ) MATCH SCOPE SKIP)
       (insert "*" latest-quotes "*"))))
 
-; Set templates for org-capture
-(setq org-capture-templates nil)
-
 (defun ref-completion(ref-file &optional allow-multi-value)
   "Emulate foreign key behavior. Allow user to enter referenced properties from a parent or referenced file."
   (lexical-let ((possible-values nil))
@@ -90,6 +87,9 @@
 
 	  )))
     ))
+
+; Set templates for org-capture
+(setq org-capture-templates nil)
 
 (add-to-list 'org-capture-templates
 	     `("m" "Add a new mission statement." entry
@@ -254,7 +254,8 @@
 (setq org-agenda-log-mode-items '(closed clock state)
       org-agenda-start-with-log-mode t
       org-agenda-start-with-follow-mode t
-      org-agenda-start-with-entry-text-mode nil)
+      org-agenda-start-with-entry-text-mode nil
+      org-agenda-log-mode-add-notes nil)
 
 (setq org-log-state-notes-into-drawer t
       org-log-done nil    ; To avoid confusion, all DONE states don't get logged automatically. Leave them to ! and @ in todo keywords below
@@ -355,9 +356,11 @@
 (setq org-agenda-custom-commands
       '(("d" "Scheduled view - Daily"
 	 ((agenda))
-	 ((org-agenda-span 1)))
+	 ((org-agenda-span 1)
+	  (org-agenda-sorting-strategy '(time-up priority-down category-keep))))
 	("w" "Scheduled view - Weekly"
-	 ((agenda)))
+	 ((agenda))
+	 ((org-agenda-sorting-strategy '(time-up priority-down category-keep))))
 	("x" "Global view - Deadline"
 	 ((todo "UNFINISHED|WAITING"))
 	 ((org-agenda-sorting-strategy '(deadline-up))
