@@ -4,7 +4,8 @@
 ;; just comment it out by adding a semicolon to the start of the line.
 ;; You may delete these explanatory comments.
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")))
+                         ("melpa" . "https://melpa.org/packages/")
+			 ("org" . "http://orgmode.org/elpa/")))
 
 (package-initialize) ; Note that using Package.el as main package manager
 
@@ -13,9 +14,8 @@
 (require 'epa-file)
 (epa-file-enable) ; Enable GPG transparent encryption
 
-(require 'cl)
-(require 'org)
-(require 'org-habit)
+(require 'cl) ; Import common lisp dialect
+(require 'org) ; Initialize Org along side its modules see custom-set-variables for org-modules below the file
 (require 'org-clock)
 
 (setq org-link-frame-setup '((file . find-file))) ; Open link in the same window
@@ -490,6 +490,10 @@
 
 ;; END of Time management module
 
+;; BEGIN of Knowledge management module
+
+;; END of Knowledge management module
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -498,7 +502,10 @@
  '(custom-safe-themes
    (quote
     ("04232a0bfc50eac64c12471607090ecac9d7fd2d79e388f8543d1c5439ed81f5" default)))
- '(package-selected-packages (quote (org-drill-table gnuplot zenburn-theme)))
+ '(org-modules
+   (quote
+    (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m org-drill)))
+ '(package-selected-packages (quote (org-plus-contrib gnuplot zenburn-theme)))
  '(safe-local-variable-values (quote ((epa-file-enrypt-to "fieldfirst2012@gmail.com")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
