@@ -450,7 +450,36 @@
 (defun org-dblock-write:timespent-by-role-report(params)
   (let ((role_hours '())
 	(total_hours 0.0)
-	(start_date (plist-get params ':start-date)))
+	(start_date (let* ((delta_start_date (plist-get params ':delta-start-date))
+			   (operator (progn
+				       (string-match "^<\\([+-]?[0-9]\\)\\([dmwy]\\)>$" delta_start_date)
+				       (match-string 2 delta_start_date)))
+			   (delta (string-to-number (match-string 1 delta_start_date)))
+			   (current_time (decode-time)))
+		      
+		      (cond ((string-equal operator "y")
+			     (setcar (cdr (cddddr current_time)) (+ (nth 5 current_time) delta)))
+			    
+			    ((string-equal operator "m")
+			     (if (>= delta 0)
+				 (setcar (cddddr current_time) (+ (nth 4 current_time) (mod delta 12)))
+			       (setcar (cddddr current_time) (+ (nth 4 current_time) (mod delta -12))))
+			     (setcar (cdr (cddddr current_time)) (+ (nth 5 current_time) (/ delta 12))))
+			    
+			    ((string-equal operator "w")
+			     (setq delta (* delta 7))
+			     (if (>= delta 0)
+				 (setcar (cdddr current_time) (+ (nth 3 current_time) (mod delta 31)))
+			       (setcar (cdddr current_time) (+ (nth 3 current_time) (mod delta -31))))
+			     (setcar (cddddr current_time) (+ (nth 4 current_time) (/ delta 31))))
+			    
+			    ((string-equal operator "d")
+			     (if (>= delta 0)
+				 (setcar (cdddr current_time) (+ (nth 3 current_time) (mod delta 31)))
+			       (setcar (cdddr current_time) (+ (nth 3 current_time) (mod delta -31))))
+			     (setcar (cddddr current_time) (+ (nth 4 current_time) (/ delta 31)))))
+		      
+		      (format-time-string "%Y-%m-%d %H:%M" (apply 'encode-time current_time)))))
     
     (let ((MATCH t)
 	  (SCOPE 'agenda)
