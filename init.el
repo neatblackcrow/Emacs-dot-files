@@ -263,6 +263,7 @@
 
 ; Try to set more generalized keywords as possible. Can be overriden at the buffer or subtree level
 (setq org-todo-keywords '((sequence "UNFINISHED(u)" "WAITING(w@)" "|" "FINISHED(f!)" "DELEGATED(d@)" "CANCELED(c@)") ; Available task states
+			  (sequence "APPOINTMENT(a)" "WAITING(w@)" "|" "FINISHED(f!)" "DELEGATED(d@)" "CANCELED(c@)") ; Available appointment states
 			  (sequence "OPENED(o)" "ONGOING(g)" "|" "CLOSED(c)" "THROWN_AWAY(t@)"))) ; Availabel project states
 
 (defun remap-org-agenda()
@@ -479,7 +480,7 @@
 			       (setcar (cdddr current_time) (+ (nth 3 current_time) (mod delta -31))))
 			     (setcar (cddddr current_time) (+ (nth 4 current_time) (/ delta 31)))))
 		      
-		      (format-time-string "%Y-%m-%d %H:%M" (apply 'encode-time current_time)))))
+		      (format-time-string "<%Y-%m-%d %H:%M>" (apply 'encode-time current_time)))))
     
     (let ((MATCH t)
 	  (SCOPE 'agenda)
@@ -523,6 +524,8 @@
 ;; END of Time management module
 
 ;; BEGIN of Knowledge management module
+
+(setq org-hide-emphasis-markers t) ; Hide marker characters such as *bold*, _underline_, /italic/ intended for better personal wiki preview
 
 ;; END of Knowledge management module
 

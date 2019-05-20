@@ -3,8 +3,8 @@
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
- (filename . "d:/Google Drive/time_management/adhoc-tasks.org.gpg")
- (front-context-string . "**** UNFINISHED ")
- (rear-context-string . ":24\n     :END:\n\n")
- (position . 956))
+ (filename . "d:/Google Drive/time_management/projects/phoenix.org.gpg")
+ (front-context-string . "*** APPOINTMENT ")
+ (rear-context-string . "13:30\n   :END:\n\n")
+ (position . 8983))
 )
