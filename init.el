@@ -12,7 +12,10 @@
 (load-theme 'zenburn t) ; Loading theme
 
 (require 'epa-file)
-(epa-file-enable) ; Enable GPG transparent encryption
+(if (eq system-type 'windows-nt)
+    (epa-file-enable)) ; Enable GPG transparent encryption
+
+(setq-default buffer-file-coding-system 'utf-8-unix) ; Set default encoding, always use LF as a line ending
 
 (require 'cl) ; Import common lisp dialect
 (require 'org) ; Initialize Org along side its modules see custom-set-variables for org-modules below the file
@@ -20,7 +23,11 @@
 
 (setq org-link-frame-setup '((file . find-file))) ; Open link in the same window
 
-(setq org-directory "D:/Desktop/personal-resources-planning") ; For relative path references
+; For absolute path references
+(cond ((eq system-type 'windows-nt)
+       (setq org-directory "D:/Desktop/personal-resources-planning"))
+      ((eq system-type 'gnu/linux)
+       (setq org-directory "~/personal-resources-planning")))
 
 ; Disable code evaluation security !
 (setq org-confirm-elisp-link-function nil
@@ -179,6 +186,25 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
+	     `("j" "Add a new ad-hoc appointment" entry
+	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
+	       ,(concat
+		 "* APPOINTMENT %^{Appointment name} %^{Tags [optional]}G \n"
+		 "  SCHEDULED: %^{Schedule}T \n"
+		 "  :PROPERTIES:\n"
+		 "  :Description: %^{Description [optional]}\n"
+		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
+		 "  :Effort: %^{Effort|0:10|0:30|1:00|1:30|2:00|2:30|3:00|3:30|4:00|4:30|5:00}\n"
+		 "  :Impact: %^{Impact|1|2|3|4|5}\n"
+		 "  :Risk: %^{Risk|low|high}\n"
+		 "  :Complexity: %^{Complexity|low|high}\n"
+		 "  :Created-at: %U\n"
+		 "  :Updated-at: %U\n"
+		 "  :END:"
+		 )
+	       :empty-lines 1) t)
+
+(add-to-list 'org-capture-templates
 	     `("i" "Add an interruption task" entry
 	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
 	       ,(concat
@@ -234,6 +260,41 @@
 	       ,(concat
 		 "* UNFINISHED %^{Task name} %^{Tags [optional]}G \n"
 		 "  %(if (yes-or-no-p \"Does a task has a schedule?\") \"SCHEDULED: %^{Schedule}T\" \"\") DEADLINE: %^{Deadline}T \n"
+		 "  :PROPERTIES:\n"
+		 "  :Description: %^{Description [optional]}\n"
+		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
+		 "  :Effort: %^{Effort|0:10|0:30|1:00|1:30|2:00|2:30|3:00|3:30|4:00|4:30|5:00}\n"
+		 "  :Impact: %^{Impact|1|2|3|4|5}\n"
+		 "  :Risk: %^{Risk|low|high}\n"
+		 "  :Complexity: %^{Complexity|low|high}\n"
+		 "  :Created-at: %U\n"
+		 "  :Updated-at: %U\n"
+		 "  :END:"
+		 )
+	       :empty-lines 1) t)
+
+(add-to-list 'org-capture-templates
+	     `("k" "Add a new project associated appointment" entry
+	       (function (lambda()
+			   (let ((file-name (read-file-name "Project file: " (concat org-directory "/time_management/projects") "" t))
+				 (available-non-todo-subheadlines '()))
+			     
+			     (let ((MATCH t)
+				   (SCOPE (list file-name))
+				   (SKIP nil))
+			       (org-map-entries
+				(lambda()
+				  (if (or (eq 1 (nth 0 (org-heading-components))) (null (nth 2 (org-heading-components))))
+				      (add-to-list 'available-non-todo-subheadlines (org-entry-get nil "ITEM"))) ;Can only insert into non-todo subheadlines or directly into the project headline
+				  ) MATCH SCOPE SKIP))
+			     
+			     (find-file file-name)
+			     (goto-char (point-min))
+			     (goto-char (re-search-forward (concat "^\*.*" (completing-read "Non-todo subheadline: " available-non-todo-subheadlines nil t))))
+			     )))
+	       ,(concat
+		 "* APPOINTMENT %^{Appointment name} %^{Tags [optional]}G \n"
+		 "  SCHEDULED: %^{Schedule}T \n"
 		 "  :PROPERTIES:\n"
 		 "  :Description: %^{Description [optional]}\n"
 		 "  :Role:  %(completing-read \"Role [optional]: \" (ref-completion \"/time_management/roles.org.gpg\") nil nil \"\")\n"
