@@ -21,17 +21,6 @@
 (require 'org) ; Initialize Org along side its modules see custom-set-variables for org-modules below the file
 (require 'org-clock)
 
-(if (eq system-type 'gnu/linux) ; Fix clocked time calculation for display in the mode-line. In Linux somehow it's off by 150 minutes
-    (eval-after-load "org-clock"
-      '(defun org-clock-get-clocked-time ()
-	 "Get the clocked time for the current item in minutes.
-The time returned includes the time spent on this task in
-previous clocking intervals."
-	 (let ((currently-clocked-time
-		(floor (- (float-time)
-			  (float-time org-clock-start-time)) 60)))
-	   (- (+ currently-clocked-time (or org-clock-total-time 0)) 150)))))
-
 (setq org-link-frame-setup '((file . find-file))) ; Open link in the same window
 
 ; For absolute path references
