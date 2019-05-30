@@ -20,6 +20,12 @@
 (require 'cl) ; Import common lisp dialect
 (require 'org) ; Initialize Org along side its modules see custom-set-variables for org-modules below the file
 (require 'org-clock)
+(require 'ess-site) ; Statistics support (R, S-Plus, SAS, Stata)
+
+(org-babel-do-load-languages ; Add languages which support org-babel evaluation
+ 'org-babel-load-languages
+ (append '((R . t))
+	 org-babel-load-languages))
 
 (setq org-link-frame-setup '((file . find-file))) ; Open link in the same window
 
@@ -601,7 +607,7 @@
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m org-drill)))
- '(package-selected-packages (quote (org-plus-contrib gnuplot zenburn-theme)))
+ '(package-selected-packages (quote (ess org-plus-contrib gnuplot zenburn-theme)))
  '(safe-local-variable-values (quote ((epa-file-enrypt-to "fieldfirst2012@gmail.com")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
