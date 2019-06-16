@@ -320,7 +320,7 @@
 
 (setq org-agenda-log-mode-items '(closed clock state)
       org-agenda-start-with-log-mode t
-      org-agenda-start-with-follow-mode t
+      org-agenda-start-with-follow-mode nil
       org-agenda-start-with-entry-text-mode nil
       org-agenda-log-mode-add-notes nil)
 
