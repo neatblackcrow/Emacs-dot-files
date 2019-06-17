@@ -9,7 +9,7 @@
 
 (package-initialize) ; Note that using Package.el as main package manager
 
-(load-theme 'zenburn t) ; Loading theme
+(load-theme 'leuven t) ; Loading theme
 
 (require 'epa-file)
 (if (eq system-type 'windows-nt)
@@ -607,7 +607,9 @@
  '(org-modules
    (quote
     (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m org-drill)))
- '(package-selected-packages (quote (ess org-plus-contrib gnuplot zenburn-theme)))
+ '(package-selected-packages
+   (quote
+    (leuven-theme ess org-plus-contrib gnuplot zenburn-theme)))
  '(safe-local-variable-values (quote ((epa-file-enrypt-to "fieldfirst2012@gmail.com")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
