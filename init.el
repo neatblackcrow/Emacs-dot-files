@@ -10,6 +10,7 @@
 (package-initialize) ; Note that using Package.el as main package manager
 
 (load-theme 'leuven t) ; Loading theme
+(tool-bar-mode 0) ; Hide the toolbar
 
 (require 'epa-file)
 (if (eq system-type 'windows-nt)
