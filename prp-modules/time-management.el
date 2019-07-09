@@ -544,7 +544,7 @@
       (org-table-align)))
   )
 
-(setq org-habit-graph-column 60)
+(setq org-habit-graph-column 60) ; Fixing a habit graph being drawn on top of a task name
 
 (defun import-data-from-ATimeLogger()
   (interactive)
@@ -560,6 +560,8 @@
 					 :finish-time ,(match-string 4 line)
 					 :comment ,(match-string 5 line)) t) ))
 
+    (setq filtered (reverse filtered)) ; In :LOGBOOK: drawer, a task that comes before must be inserted first
+
     (let ((MATCH t)
 	  (SCOPE 'agenda)
 	  (SKIP nil)
@@ -567,8 +569,8 @@
       (mapcar (lambda(x)
 	      (org-map-entries
 	       (lambda()
-		 (when (and (string-equal (org-entry-get nil "ITEM") (plist-get x :task))
-			    (and (eq (nth 3 (decode-time (org-time-string-to-time (org-entry-get nil "SCHEDULED"))))
+		 (when (and (string-equal (org-entry-get nil "ITEM") (plist-get x :task)) ; Compare task's name with heading
+			    (and (eq (nth 3 (decode-time (org-time-string-to-time (org-entry-get nil "SCHEDULED")))) ; Compare task's scheduled date
 				     (nth 3 (decode-time (org-time-string-to-time (plist-get x :start-time)))))
 				 (eq (nth 4 (decode-time (org-time-string-to-time (org-entry-get nil "SCHEDULED"))))
 				     (nth 4 (decode-time (org-time-string-to-time (plist-get x :start-time)))))
@@ -584,7 +586,8 @@
 		   (org-insert-time-stamp (apply 'encode-time (parse-time-string (plist-get x :finish-time))) t t)
 		   (org-evaluate-time-range)
 
-		   (when (> (length (plist-get x :comment)) 0)
+		   (when (and (> (length (plist-get x :comment)) 0) ; Only added if a task has a comment
+			      (not (string-eq " " (plist-get x :comment)))) ; Prevent a single space from being added (fix a flaw from regex pattern above)
 		     (org-clock-find-position nil)
 		     (insert "\n")
 		     (forward-line -1)
@@ -625,37 +628,15 @@
 	      ) filtered))
     ))
 
-; org-caldav - Syncing with Google calendar
-(setq org-caldav-url 'google
-      org-caldav-oauth2-client-id "375561179247-9mrmg4a8aqn3ihnc8fm7ri7ll34dcjmj.apps.googleusercontent.com"
-      org-caldav-oauth2-client-secret "qIhWuWp0o243RegfX2_eNvKy"
-      
-      org-caldav-delete-org-entries 'ask          ; If you choose no, when you resync the removed tasks will reappear in Google calendar
-      org-caldav-delete-calendar-entries 'always  ; Org always override Google calendar
-      org-caldav-save-directory (concat org-directory "/time_management") ; Save sync states along with other files (keep in sync with Google drive)
-      
-      org-caldav-inbox `(file+headline ,(concat org-directory "/time_management/index.org.gpg") "node Google calendar inbox") ; Every calendar shares the same inbox
-      org-caldav-files '() ; Empty, use org-caldav-calendars instead
-      org-caldav-calendar-id "" ; Empty, use org-caldav-calendars instead
-      org-caldav-calendars `((:calendar-id "93v0up629h28b4hi0ofee19d40@group.calendar.google.com"
-					   :files (,(concat org-directory "/time_management/adhoc-tasks.org.gpg")))))
-
-; org-caldav
-; Work around for json eof error, Due to org-caldav don't update their oauth2 provider url for Google
-(setq org-caldav-oauth2-providers
-      '((google
-         "https://accounts.google.com/o/oauth2/v2/auth"
-         "https://www.googleapis.com/oauth2/v4/token"
-         "https://www.googleapis.com/auth/calendar"
-         "https://apidata.googleusercontent.com/caldav/v2/%s/events")))
-
-(setq org-caldav-debug-level 2) ; Set debug verbosity to 2, intent to use with M-x toggle-dubug-on-error
-
-
-; org-caldav using org-icalendar as an engine
+; org-icalendar, not used right now
 (setq org-icalendar-timezone "Asia/Bangkok"
-      org-icalendar-use-scheduled '(todo-start)
-      org-icalendar-use-deadline '(event-if-not-todo todo-due)
-      org-icalendar-alarm-time 1)
+      org-icalendar-use-scheduled '(event-if-todo)
+      org-icalendar-use-deadline '(todo-due event-if-todo)
+      org-icalendar-alarm-time 1
+      org-icalendar-combined-agenda-file (concat org-directory "/time_management/gcal_export.ics")
+      org-icalendar-include-todo 'all
+      org-icalendar-include-body t
+      org-icalendar-with-timestamps 'active)
+
 
 ;; END of Time management module

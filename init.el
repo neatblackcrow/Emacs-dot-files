@@ -24,7 +24,6 @@
 (require 'org) ; Initialize Org along side its modules see custom-set-variables for org-modules below the file
 (require 'org-clock)
 (require 'ess-site) ; Statistics support (R, S-Plus, SAS, Stata)
-(require 'org-caldav)
 
 (org-babel-do-load-languages ; Add languages which support org-babel evaluation
  'org-babel-load-languages
@@ -73,7 +72,7 @@
     (org-bbdb org-bibtex org-docview org-gnus org-habit org-info org-irc org-mhe org-rmail org-w3m org-drill)))
  '(package-selected-packages
    (quote
-    (oauth2 org-caldav leuven-theme ess org-plus-contrib gnuplot zenburn-theme)))
+    (oauth2 leuven-theme ess org-plus-contrib gnuplot zenburn-theme)))
  '(safe-local-variable-values (quote ((epa-file-enrypt-to "fieldfirst2012@gmail.com")))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
