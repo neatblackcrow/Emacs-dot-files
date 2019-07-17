@@ -20,15 +20,21 @@
 	 ) MATCH SCOPE SKIP)
       (insert "*" latest-quotes "*"))))
 
-(defun ref-completion(ref-file &optional allow-multi-value)
-  "Emulate foreign key behavior. Allow user to enter referenced properties from a parent or referenced file."
+(defun ref-completion(ref-file &optional allow-multi-value prop)
+  "Emulate foreign key behavior. Allow user to enter referenced properties from a parent or referenced file.
+   Or using a headline if user doesn't specify any referenced property"
   (lexical-let ((possible-values nil))
     (setq available-values (let ((MATCH t)
 				 (SCOPE (list (concat org-directory ref-file)))
 				 (SKIP nil))
 			     (org-map-entries
 			      (lambda()
-				(org-entry-get nil "ITEM")
+				(if (not (null prop))
+				    (let ((prop_string (org-entry-get nil prop)))
+				      (when (not (null prop_string))
+					(string-match "^\"\\(.*\\)\"$" prop_string)
+					(match-string 1 prop_string)))
+				  (org-entry-get nil "ITEM"))
 				) MATCH SCOPE SKIP)))
     
     (if (not allow-multi-value)
@@ -60,10 +66,12 @@
     ))
 
 ; Set templates for org-capture. Beware that org-capture-templates is a global variable shared among modules
-(setq org-capture-templates nil)
+(setq org-capture-templates '())
+(add-to-list 'org-capture-templates
+	     '("t" "Time management module") t)
 
 (add-to-list 'org-capture-templates
-	     `("m" "Add a new mission statement." entry
+	     `("tm" "Add a new mission statement." entry
 	       (file "./time_management/mission-statements.org.gpg")
 	       ,(concat
 		 "* %^{Statement}\n"
@@ -75,7 +83,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("l" "Add a new life area." entry
+	     `("tl" "Add a new life area." entry
 	       (file "./time_management/life-areas.org.gpg")
 	       ,(concat
 		 "* %^{Life area}\n"
@@ -87,7 +95,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("v" "Add a new life value." entry
+	     `("tv" "Add a new life value." entry
 	       (file "./time_management/values.org.gpg")
 	       ,(concat
 		 "* %^{Value}\n"
@@ -100,7 +108,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("r" "Add a new life role." entry
+	     `("tr" "Add a new life role." entry
 	       (file "./time_management/roles.org.gpg")
 	       ,(concat
 		 "* %^{Role}\n"
@@ -115,7 +123,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("e" "Add a new life event" entry
+	     `("te" "Add a new life event" entry
 	       (file+headline "./time_management/life-events.org.gpg" "Life events")
 	       ,(concat
 		 "* %^{Event}\n"
@@ -131,7 +139,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("a" "Add a new ad-hoc task" entry
+	     `("ta" "Add a new ad-hoc task" entry
 	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
 	       ,(concat
 		 "* UNFINISHED %^{Task name} %^{Tags [optional]}G \n"
@@ -150,7 +158,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("j" "Add a new ad-hoc appointment" entry
+	     `("tj" "Add a new ad-hoc appointment" entry
 	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
 	       ,(concat
 		 "* APPOINTMENT %^{Appointment name} %^{Tags [optional]}G \n"
@@ -169,7 +177,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("i" "Add an interruption task" entry
+	     `("ti" "Add an interruption task" entry
 	       (file+datetree "./time_management/adhoc-tasks.org.gpg")
 	       ,(concat
 		 "* UNFINISHED %^{Task name} :interruption: %^{Tags [optional]}G \n"
@@ -188,7 +196,7 @@
 	       :empty-lines 1 :clock-in t) t)
 
 (add-to-list 'org-capture-templates
-	     `("p" "Add a new project" entry
+	     `("tp" "Add a new project" entry
 	       (function (lambda()
 			   (find-file(read-file-name "Project file: " (concat org-directory "/time_management/projects") "new-project.org.gpg")) ))
 	       ,(concat
@@ -203,7 +211,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("t" "Add a new project associated task" entry
+	     `("tt" "Add a new project associated task" entry
 	       (function (lambda()
 			   (let ((file-name (read-file-name "Project file: " (concat org-directory "/time_management/projects") "" t))
 				 (available-non-todo-subheadlines '()))
@@ -238,7 +246,7 @@
 	       :empty-lines 1) t)
 
 (add-to-list 'org-capture-templates
-	     `("k" "Add a new project associated appointment" entry
+	     `("tk" "Add a new project associated appointment" entry
 	       (function (lambda()
 			   (let ((file-name (read-file-name "Project file: " (concat org-directory "/time_management/projects") "" t))
 				 (available-non-todo-subheadlines '()))
@@ -587,7 +595,7 @@
 		   (org-evaluate-time-range)
 
 		   (when (and (> (length (plist-get x :comment)) 0) ; Only added if a task has a comment
-			      (not (string-eq " " (plist-get x :comment)))) ; Prevent a single space from being added (fix a flaw from regex pattern above)
+			      (not (string-equal "\"" (plist-get x :comment)))) ; Prevent a single " from being added (fix a flaw from regex pattern above)
 		     (org-clock-find-position nil)
 		     (insert "\n")
 		     (forward-line -1)

@@ -55,6 +55,7 @@
 (add-to-list 'load-path (concat emacs-config-path "/prp-modules"))
 (load "time-management.el")
 (load "knowledge-management.el")
+(load "health-management.el")
 
 
 
